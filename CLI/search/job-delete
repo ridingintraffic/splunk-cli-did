@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# job-delete: dletes jobs based on sid
+#
+# Usage: job-delete <sid>
+#
+#
+# Examples:
+#
+# job-delete <sid>
+#
+# Requirements:
+# Environment Variables:
+# USERNAME
+# PASSWORD
+export SPLUNK_USERNAME=$USERNAME
+export SPLUNK_PASSWORD=$PASSWORD
+if [ -z "$SPLUNK_HOST" ]; then 
+  export SPLUNK_HOST="localhost"
+fi
+# 
+
+help() {
+  echo "$0:"
+  echo "  usage:"
+  echo "    job-delete <job_sid>"
+  exit 0
+}
+
+
+
+if [ "$1" == "-h" ] || [ "$1" == "--help" ] || [ "$1" == "help" ]; then
+  help
+  exit 0
+fi
+
+if [ -z "$USERNAME" ] || [ -z "$PASSWORD" ]; then
+  echo "one of \$USERNAME \$PASSWORD is empty"
+ else
+  curl -u $USERNAME:$PASSWORD -k --request DELETE https://$SPLUNK_HOST:8089/services/search/jobs/$1; 
+  
+fi

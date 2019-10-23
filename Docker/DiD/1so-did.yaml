@@ -1,0 +1,60 @@
+version: "3.6"
+
+networks:
+  splunknet:
+    driver: bridge
+    attachable: true
+volumes:
+  so1-etc:
+    driver: local
+  so1-var:
+    driver: local
+services:
+  
+  dep1:
+    networks:
+      splunknet:
+        aliases:
+          - dep1
+    image: ridingintraffic/splunk-did:latest
+    command: start
+    hostname: dep1
+    container_name: dep1
+    restart: always 
+    environment:
+      - SPLUNK_START_ARGS=--accept-license
+      - SPLUNK_DEPLOYER_URL=dep1
+      - SPLUNK_ROLE=splunk_deployer
+      - SPLUNK_PASSWORD=changeme
+      - SPLUNK_INDEXER_URL=sh1
+      - SPLUNK_SEARCH_HEAD_URL=sh1
+      - SPLUNK_LICENSE_URI=/run/secrets/splunk_license
+     
+    ports:
+      - "8001:8000"
+      - 8089
+
+  so1:
+    networks:
+      splunknet:
+        aliases:
+          - so1
+    image: ridingintraffic/splunk-did:latest
+    hostname: so1
+    container_name: so1
+    restart: always 
+    environment:
+      - SPLUNK_START_ARGS=--accept-license
+      - SPLUNK_PASSWORD=changeme
+      #- SPLUNK_APPS_URL=http://appserver/apptest.tar.gz 
+      - SPLUNK_DEPLOYER_URL=dep1
+      - SPLUNK_LICENSE_URI=/run/secrets/splunk_license
+      - DEBUG=true
+    ports:
+      - "8000:8000"
+      - "8089:8089"
+    volumes:
+      - so1-etc:/opt/splunk/etc
+      - so1-var:/opt/splunk/var
+      - /var/run/docker.sock:/var/run/docker.sock
+

@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# get-results: output results quick
+#
+# Usage: get-results "<splunk spl>" 
+# 	get-results "index=_interal  | stats count by clientip"
+# 
+# 
+# Arguments:
+# Environment Variables:
+# USERNAME
+# PASSWORD
+# SPLUNK_HOST
+
+export SPLUNK_USERNAME=$USERNAME
+export SPLUNK_PASSWORD=$PASSWORD
+if [ -z "$SPLUNK_HOST" ]; then 
+  export SPLUNK_HOST="localhost"
+fi
+
+help() {
+  echo "$0:"
+  echo "  Usage: get-results \"<splunk spl>\" "
+  echo "     "
+  echo "  example:"
+  echo "    get-results \"index=*  | table *\" "
+  exit 0
+}
+
+
+
+if [ "$1" == "-h" ] || [ "$1" == "--help" ] || [ "$1" == "help" ]; then
+  help
+  exit 0
+fi
+
+if [ -z "$USERNAME" ] || [ -z "$PASSWORD" ]
+then
+  echo "one of \$USERNAME \$PASSWORD is empty"
+else 
+  if [ -f /.dockerenv ]; then
+		# in docker
+	    searchlocation="/cmd/search/search"
+	else
+		#normal world
+	    searchlocation="./search/search"
+	fi
+	search=$(cat  << EndOfMessage
+search $1
+EndOfMessage
+)
+	$searchlocation "$search" --output_mode=json 
+fi
+
+

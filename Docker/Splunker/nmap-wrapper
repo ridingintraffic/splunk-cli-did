@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# nmap wrapper script
+#
+# Usage: nmap <host>
+#
+#
+# Examples:
+#
+# nmap google.com
+#
+
+help() {
+  echo "$0:"
+  echo "  usage:"
+  echo "    nmap <host> "
+  echo "  example:"
+  echo "    nmap google.com"
+ 
+  exit 
+}
+
+if [ "$1" == "-h" ] || [ "$1" == "--help" ] || [ "$1" == "help" ]; then
+  help
+  exit 0
+
+fi
+
+nmap $1

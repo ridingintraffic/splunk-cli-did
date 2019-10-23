@@ -1,0 +1,4 @@
+CLI/splunk-sdk-python/*
+*splunk-sdk-python/*
+*splunk-sdk-python.tar.gz
+.DS_Store
