@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# index-search: fuzzy matching an index 
+#
+# Usage: index-search <index_name>
+# 
+# Arguments:
+# Environment Variables:
+# SPLUNK_USERNAME
+# SPLUNK_PASSWORD
+# SPLUNK_HOST
+
+
+export SPLUNK_USERNAME=$USERNAME
+export SPLUNK_PASSWORD=$PASSWORD
+if [ -z "$SPLUNK_HOST" ]; then 
+  export SPLUNK_HOST="localhost"
+fi
+
+help() {
+  echo "$0:"
+  echo "  usage:"
+  echo "    index-search <index_name>"
+  echo "  example:"
+  echo "    index-search fault"
+  exit 0
+}
+
+
+
+if [ "$1" == "-h" ] || [ "$1" == "--help" ] || [ "$1" == "help" ]; then
+  help
+  exit 0
+fi
+
+if [ -z "$USERNAME" ] || [ -z "$PASSWORD" ]
+then
+  echo "one of \$USERNAME \$PASSWORD is empty"
+else
+	if [ -f /.dockerenv ]; then
+	    # in docker
+	    searchlocation="/cmd/search/search"
+	else
+		#normal world
+		searchlocation="./search/search"
+	fi
+	$searchlocation "| eventcount summarize=false index=* | dedup index | fields index | search index=*$1*" --output_mode=json | jq -r '.results[].index '
+	
+ 	
+fi
+
+
+
+
+

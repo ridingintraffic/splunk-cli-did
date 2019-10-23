@@ -13,3 +13,4 @@ RUN tar xvf /splunk-sdk-python.tar.gz --strip 1 -C /opt/splunk-sdk-python
 
 RUN mkdir /cmd
 COPY search /cmd/search
+COPY nmap-wrapper /cmd/

@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# show-macro: example making use of the search python script 
+#
+# Usage: show-macro <macro_name>
+# 
+# 
+# Arguments:
+# Environment Variables:
+# SPLUNK_USERNAME
+# SPLUNK_PASSWORD
+# SPLUNK_HOST
+
+export SPLUNK_USERNAME=$USERNAME
+export SPLUNK_PASSWORD=$PASSWORD
+if [ -z "$SPLUNK_HOST" ]; then 
+  export SPLUNK_HOST="localhost"
+fi
+
+help() {
+  echo "$0:"
+  echo "  usage:"
+  echo "    show-macro <macro_name>"
+  echo "  example:"
+  echo "    show-macro dmc_daily_license_usage_quota"
+  exit 0
+}
+
+
+
+if [ "$1" == "-h" ] || [ "$1" == "--help" ] || [ "$1" == "help" ]; then
+  help
+  exit 0
+
+fi
+
+if [ -z "$SPLUNK_USERNAME" ] || [ -z "$SPLUNK_PASSWORD" ]
+then
+  echo "one of \$USERNAME \$PASSWORD is empty"
+else
+  if [ -f /.dockerenv ]; then
+    # in docker
+    searchlocation="/cmd/search/search"
+  else
+    searchlocation="./search/search"
+  fi
+  $searchlocation "| rest splunk_server=local /servicesNS/-/-/admin/macros| table title, args, definition| search title=\"*$1*\"" --output_mode=json | jq -r '.results[] | .title, .definition '
+fi
+
+

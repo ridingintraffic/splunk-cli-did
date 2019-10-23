@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+# job-search: find jobs for a user 
+#
+# Usage: job-search <user_name>
+# 
+# Arguments:
+# Environment Variables:
+# SPLUNK_USERNAME
+# SPLUNK_PASSWORD
+# SPLUNK_HOST
+
+
+export SPLUNK_USERNAME=$USERNAME
+export SPLUNK_PASSWORD=$PASSWORD
+if [ -z "$SPLUNK_HOST" ]; then 
+  export SPLUNK_HOST="localhost"
+fi
+
+
+help() {
+  echo "$0:"
+  echo "  usage:"
+  echo "    job-search <user_name> <job_size_MB OPTIONAL>"
+  echo "  example:"
+  echo "    job-search  admin"
+  echo "    job-search admin 200"
+  exit 0
+}
+
+
+
+if [ "$1" == "-h" ] || [ "$1" == "--help" ] || [ "$1" == "help" ]; then
+  help
+  exit 0
+fi
+
+if [ -z "$USERNAME" ] || [ -z "$PASSWORD" ]; then
+ 	echo "one of \$USERNAME \$PASSWORD is empty"
+ else
+	if [ -f /.dockerenv ]; then
+	    # in docker
+	    searchlocation="/cmd/search/search"
+	else
+		#normal world
+		searchlocation="./search/search"
+	fi
+	
+	if [ -z "$2" ]; then
+		job_size_MB=0
+	else
+		job_size_MB=$2
+	fi
+
+	$searchlocation "| rest splunk_server=local /services/search/jobs | eval diskUsageMB=diskUsage/1024/1024 | rename eai:acl.owner AS owner, optimizedSearch AS searchQuery | table  diskUsageMB sid owner searchQuery | search owner=*$1*| search diskUsageMB>$job_size_MB" --output_mode=json | jq -r '.results[] '
+	
+fi
+
